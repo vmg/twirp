@@ -33,7 +33,12 @@ import (
 
 func main() {
 	genReq := readGenRequest(os.Stdin)
-	g := &generator{version: Version, genReq: genReq}
+	g := &generator{
+		version: Version,
+		genReq: genReq,
+		fileToGoPackageName: make(map[*descriptor.FileDescriptorProto]string),
+		reg: typemap.New(genReq.ProtoFile),
+	}
 	genResp := g.Generate()
 	writeGenResponse(os.Stdout, genResp)
 }
@@ -56,8 +61,6 @@ func fileDescSliceContains(slice []*descriptor.FileDescriptorProto, f *descripto
 }
 
 func (g *generator) Generate() *plugin.CodeGeneratorResponse {
-	g.reg = typemap.New(g.genReq.ProtoFile)
-
 	resp := new(plugin.CodeGeneratorResponse)
 	genFiles := g.protoFilesToGenerate()
 
